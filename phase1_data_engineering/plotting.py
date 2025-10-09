@@ -1,15 +1,13 @@
 from fetch_data import StockFetcher
-
 import matplotlib.pyplot as plt
 
 class StockPlotter:
-
     def __init__(self, symbol, period='1mo', interval='1h'):
         self.symbol = symbol
         self.period = period
         self.interval = interval
 
-    def plot_data(self):
+    def plotting(self):
         fetcher = StockFetcher(self.symbol, self.period, self.interval)
         df = fetcher.get_data()
         
