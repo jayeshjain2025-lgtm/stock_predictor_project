@@ -1,12 +1,10 @@
 import streamlit as st
 from plotting import StockPlotter       # Make sure this module is accessible
 
-
 st.title("📈 Stock Analyzer with Yahoo Finance")
 
 # --- Inputs ---
 symbol = st.text_input("Enter stock ticker symbol", "AAPL").strip().upper()
-
 
 with st.sidebar:
     st.header("Configuration")
@@ -29,8 +27,8 @@ if st.button("Fetch and Plot"):
         try:
             # Use the user inputs
             plotter = StockPlotter(symbol, period, interval)
-            df = plotter.plot_data()  # this will save CSV and plot
-
+            df = plotter.plotting()  # this will save CSV and plot
+            
             # Optional Streamlit line chart
             st.line_chart(df["Close"])
             st.success(f"Fetched {len(df)} rows for {symbol}")
