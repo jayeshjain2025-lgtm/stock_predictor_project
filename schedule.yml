@@ -1,4 +1,0 @@
-on:
-  schedule:
-    - cron: '*/15 * * * *'
-    
