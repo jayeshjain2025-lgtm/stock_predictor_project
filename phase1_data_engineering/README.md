@@ -1,22 +1,19 @@
 # Phase 1: Data Engineering
 
 ## Purpose
-
-This phase establishes the foundation of the Stock Predictor project by:
+This phase establishes the foundation of the Stock Trend Predictor project by:
 - Collecting historical stock market data from reliable sources
 - Processing and cleaning raw financial data for analysis
 - Creating insightful visualizations to understand stock price trends and patterns
 - Building a reusable data pipeline for future phases
 
 ## Data Sources
-
 - **Yahoo Finance API** via the `yfinance` Python library
   - Provides historical stock prices (Open, High, Low, Close, Volume)
   - Supports multiple ticker symbols and date ranges
   - Free and reliable data source for financial information
 
 ## Pipeline Overview
-
 The Phase 1 data pipeline follows three key steps:
 
 ### 1. **Fetch** (`fetch_data.py`)
@@ -35,7 +32,6 @@ The Phase 1 data pipeline follows three key steps:
 - Saves charts as image files for reporting
 
 ## Example Output Charts
-
 The pipeline generates various visualizations including:
 
 ```python
@@ -44,53 +40,24 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Sample output showing closing prices over time
-plt.figure(figsize=(12, 6))
-plt.plot(data.index, data['Close'], label='Closing Price')
-plt.title('Stock Price History')
+df.plot(y='Close', title='Stock Price History')
 plt.xlabel('Date')
-plt.ylabel('Price ($)')
-plt.legend()
-plt.grid(True)
-plt.savefig('stock_price_chart.png')
+plt.ylabel('Price (USD)')
+plt.show()
 ```
 
-**Sample Chart Output:**
-
-![Stock Price Visualization](./demo/sample_chart.png)
-
-*Note: Actual charts will be saved in the current directory after running the scripts.*
-
-## Instructions to Run
+## Running the Phase 1 Pipeline
 
 ### Prerequisites
-Ensure you have Python 3.x installed on your system.
+- Python 3.8 or higher
+- Internet connection for data fetching
 
-### Step 1: Install Dependencies
-```bash
-pip install yfinance pandas matplotlib seaborn
-```
-
-### Step 2: Run Individual Scripts
-
-**To fetch data only:**
-```bash
-python fetch_data.py
-```
-
-**To generate visualizations:**
-```bash
-python plotting.py
-```
-
-### Step 3: Run Complete Pipeline
-**Execute the main script to run the entire pipeline:**
+### Steps to Execute
+1. Navigate to the phase1_data_engineering directory
+2. Run the main pipeline script:
 ```bash
 python main.py
 ```
-
-This will:
-1. Fetch stock data using `fetch_data.py`
-2. Clean and process the data
 3. Generate visualizations using `plotting.py`
 4. Save output files (charts and data) to the current directory
 
@@ -118,7 +85,6 @@ pip install yfinance pandas matplotlib seaborn
 ```
 
 ## Project Structure
-
 ```
 phase1_data_engineering/
 ├── README.md           # This file
@@ -129,12 +95,10 @@ phase1_data_engineering/
 ```
 
 ## Output Files
-
 After running the pipeline, you'll find:
 - Stock price charts (`.png` files)
 - Processed data files (optional `.csv` exports)
 - Log files (if logging is enabled)
 
 ## Next Steps
-
 Once Phase 1 is complete, proceed to **Phase 2: Finance Basics** to implement financial metrics and technical indicators.
