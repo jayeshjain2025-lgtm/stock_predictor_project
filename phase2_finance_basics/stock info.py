@@ -76,18 +76,3 @@ class Stock:
         if self.debt_to_equity:
             return f"D/E Ratio: {self.debt_to_equity:.2f}"
         return "D/E ratio data not available."
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    symbol = input("Enter the stock ticker (e.g. AAPL, INFY.NS): ").upper()
-    stock = Stock(symbol)
-
-    print("\n--- Company Financial Snapshot ---")
-    print(stock.market_cap())
-    print(stock.dividend_info())
-    print(stock.eps_info())
-    print(stock.pe_ratio())
-    print(stock.pb_ratio())
-    print(stock.roe_ratio())
-    print(stock.de_ratio())
