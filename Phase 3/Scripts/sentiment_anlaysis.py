@@ -7,6 +7,10 @@ from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import re
 import boto3
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # ---- config / paths (adapt to your project layout) ----
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,6 +21,7 @@ os.makedirs(data_processed_dir, exist_ok=True)
 
 date_str = datetime.datetime.now().strftime("%Y-%m-%d")
 raw_path = os.path.join(data_raw_dir, f"{date_str}.csv")
+
 if not os.path.exists(raw_path):
     raise FileNotFoundError(f"Raw file not found: {raw_path}")
 
@@ -27,7 +32,7 @@ def clean_text(s):
     s = s.replace("\n", " ").replace("\r", " ")
     s = re.sub(r"\s+", " ", s).strip()
     # remove some junk chars that confuse sentiment tools
-    s = s.replace("’", "'").replace("“", '"').replace("”", '"')
+    s = s.replace("‘", "'").replace("“", '"').replace("”", '"')
     return s
 
 # ---- finance lexicon (small, extend later) ----
@@ -36,6 +41,7 @@ FIN_POS = [
     "upgraded", "upgrade", "record high", "record-high", "strong earnings",
     "outperform", "bullish", "bounce", "turnaround", "recovery"
 ]
+
 FIN_NEG = [
     "plunge", "plunges", "drop", "drops", "decline", "declines", "miss",
     "misses", "downgrade", "downgrades", "weak", "weakness", "warns",
@@ -65,8 +71,9 @@ def lexicon_adjust(text_lower):
 analyzer = SentimentIntensityAnalyzer()
 
 # ---- read data ----
-df = pd.read_csv(raw_path, dtype=str)  # read as strings to avoid surprises
+df = pd.read_csv(raw_path, dtype=str) # read as strings to avoid surprises
 df.fillna("", inplace=True)
+
 if "title" not in df.columns:
     raise ValueError("Expected 'title' column in raw CSV")
 
@@ -88,26 +95,26 @@ for i, row in df.iterrows():
     raw_title = row.get("title", "")
     title = clean_text(raw_title)
     title_lower = title.lower()
-
+    
     # VADER compound (-1..1)
     vader_scores = analyzer.polarity_scores(title)
     vader_compound = vader_scores.get("compound", 0.0)
-
+    
     # TextBlob polarity (-1..1) + subjectivity
     tb = TextBlob(title)
     tb_polarity = tb.sentiment.polarity
     subjectivity = tb.sentiment.subjectivity
-
+    
     # ensemble: weight VADER more for short headlines
     combined = 0.65 * vader_compound + 0.35 * tb_polarity
-
+    
     # lexicon adjustment (finance-specific)
     adjust = lexicon_adjust(title_lower)
     combined += adjust
-
+    
     # clamp
     combined = max(-1.0, min(1.0, combined))
-
+    
     # label with a narrow neutral band
     if combined > 0.05:
         label = "Positive"
@@ -115,7 +122,7 @@ for i, row in df.iterrows():
         label = "Negative"
     else:
         label = "Neutral"
-
+    
     scores.append(combined)
     labels.append(label)
     subjectivities.append(subjectivity)
@@ -141,13 +148,23 @@ summary = {
     "num_neutral": int((df["sentiment_label"] == "Neutral").sum()),
     "num_negative": int((df["sentiment_label"] == "Negative").sum()),
 }
+
 summary_path = os.path.join(data_processed_dir, f"{date_str}_sentiment_summary.json")
 with open(summary_path, "w") as f:
     json.dump(summary, f, indent=2)
 
-s3 = boto3.client("s3")
-s3.upload_file(processed_path, "phase-3-bucket", f"Processed/{date_str}_sentiment.csv")
+# Get AWS credentials from environment variables
+AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')
+if not AWS_S3_BUCKET:
+    raise ValueError("AWS_S3_BUCKET not found in environment variables. Please set it in .env file")
 
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
+
+s3.upload_file(processed_path, AWS_S3_BUCKET, f"Processed/{date_str}_sentiment.csv")
 print(f"Saved processed sentiment to: {processed_path}")
 print(f"Saved summary to: {summary_path}")
 print("Summary:", summary)
