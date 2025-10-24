@@ -1,5 +1,9 @@
 import pandas as pd
 import os, datetime, json, boto3
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -15,12 +19,13 @@ with open(config_path, 'r') as f:
 data_processed_dir = os.path.join(project_root, "Data", "Processed")
 data_fused_dir = os.path.join(project_root, "Data", "Fused")
 os.makedirs(data_fused_dir, exist_ok=True)
+
 data_analysed_dir = os.path.join(mini_projects, 'Phase 2', 'data', 'phase2_datasets')
 
 # File names
 date_str = datetime.datetime.now().strftime("%Y-%m-%d")
-indicators_path = os.path.join(data_analysed_dir, f"MSFT_analysis_data.csv")  # Phase 2 output
-sentiment_path = os.path.join(data_processed_dir, f"{date_str}_sentiment.csv")               # Phase 3 output
+indicators_path = os.path.join(data_analysed_dir, f"MSFT_analysis_data.csv") # Phase 2 output
+sentiment_path = os.path.join(data_processed_dir, f"{date_str}_sentiment.csv") # Phase 3 output
 
 # Load data
 indicators_df = pd.read_csv(indicators_path)
@@ -47,8 +52,17 @@ merged_df["sentiment_count"].fillna(0, inplace=True)
 fused_path = os.path.join(data_fused_dir, f"{date_str}.csv")
 merged_df.to_csv(fused_path, index=False)
 
-#S3 Upload
-s3 = boto3.client("s3")
-s3.upload_file(fused_path, "phase-3-bucket", f"Fused/{date_str}_fused_features.csv")
+# Get AWS credentials from environment variables
+AWS_S3_BUCKET = os.getenv('AWS_S3_BUCKET')
+if not AWS_S3_BUCKET:
+    raise ValueError("AWS_S3_BUCKET not found in environment variables. Please set it in .env file")
 
+# S3 Upload
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+)
+
+s3.upload_file(fused_path, AWS_S3_BUCKET, f"Fused/{date_str}_fused_features.csv")
 print(f"Feature fusion complete. File saved at: {fused_path}")
