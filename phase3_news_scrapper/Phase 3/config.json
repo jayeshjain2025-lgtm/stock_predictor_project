@@ -1,0 +1,10 @@
+{
+  "rss_feeds": [
+    "https://feeds.finance.yahoo.com/rss/2.0/headline?s=MSFT&region=US&lang=en-US",
+    "https://feeds.marketwatch.com/marketwatch/topstories/",
+    "https://www.investing.com/rss/news_25.rss",
+    "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+    "https://www.livemint.com/rss/markets"
+  ],
+  "output_path": "../data/scraped_news.csv"
+}
